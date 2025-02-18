@@ -1,5 +1,6 @@
 import os, sys
 import numpy as np
+import matplotlib.pyplot as plt
 
 # PyTorch Functions
 import torch
@@ -8,12 +9,14 @@ import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset, random_split
 
 # Custom 
-import models as models
+import models
 import functions as func
 
 
 # Example usage
 if __name__ == "__main__":
+
+    flag_plot = True
 
     # Check if MPS (Mac Metal Performance Shaders) is available MacOS
     if torch.backends.mps.is_available():
@@ -27,13 +30,9 @@ if __name__ == "__main__":
     else:
         device = torch.device("cpu")
 
-    print(f"Using device: {device}")
-
-
+    print(f"\nDevice: {device}")
 
     basepath = os.path.join("data", "california_housing")
-    print("Basepath: ", basepath)
-
     file_names = os.path.join(basepath, "x_names.npy")
     file_x = os.path.join(basepath, "x.npy")
     file_y = os.path.join(basepath, "y_MedHouseValue.npy")
@@ -48,14 +47,18 @@ if __name__ == "__main__":
     print(names)
 
     # Normalize between 0 and 1
-    y = y / np.amax(y)
+    max_house_value = np.amax(y)
+    y = y / max_house_value
     x = x / x.max(axis=1, keepdims=True)
+
+    print("Max Median Home Value: ${}".format(int(max_house_value * 100000)))
 
 
     N = x.shape[1]  # Number of input features
-    print("Number of input features: ", N)
+    print("Number of input features: {}\n".format(N))
     
     hidden_size = 16
+    epochs = 10
     
     
     # Convert to torch tensors
@@ -74,18 +77,20 @@ if __name__ == "__main__":
     
     model = models.SimpleNN(input_size=N, hidden_size=hidden_size)
     criterion = nn.MSELoss()
-    optimizer = optim.SGD(model.parameters(), lr=0.01)
+    optimizer = optim.NAdam(model.parameters(), lr=0.01)
     
     # Train the model
-    func.train_model(model, train_loader, criterion, optimizer, device, num_epochs=10)
+    func.train_model(model, train_loader, criterion, optimizer, device, num_epochs=epochs)
     
     # Test the model
     predictions, actuals = func.test_model(model, test_loader, device)
+
+    predictions = max_house_value * 100000 * predictions # prior to calculation in $100,000
+    actuals = max_house_value * 100000 * actuals # prior to calculation in $100,000
     
-    # Evaluate new data
-    new_data = torch.randn(5, N)
-    results = func.evaluate_data(model, new_data, device)
-    print("Evaluated Results:", results)
-
-
-
+    if flag_plot:
+        fig, ax = plt.subplots(figsize=(10,7))
+        ax.scatter(actuals, predictions, color='black')
+        ax.set_xlabel("Actual Median Household Value ($)", fontsize=12)
+        ax.set_ylabel("Predicted Value ($)", fontsize=12)
+        plt.show()

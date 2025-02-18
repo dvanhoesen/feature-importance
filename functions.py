@@ -36,18 +36,7 @@ def test_model(model, test_loader, device):
             predictions.extend(outputs.cpu().numpy())
             actuals.extend(targets.cpu().numpy())
     
-    return predictions, actuals
-
-
-# Function to evaluate new data
-def evaluate_data(model, data, device):
-    model.to(device)
-    model.eval()
-    
-    data = torch.tensor(data, dtype=torch.float32).to(device)
-    with torch.no_grad():
-        output = model(data)
-    return output.cpu().numpy()
+    return np.array(predictions), np.array(actuals)
 
 
 '''
