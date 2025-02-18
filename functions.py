@@ -1,8 +1,56 @@
 import numpy as np
-from scipy.fft import fft, fftfreq
-from sklearn.base import BaseEstimator
-import matplotlib.pyplot as plt
+#from scipy.fft import fft, fftfreq
+#from sklearn.base import BaseEstimator
+#import matplotlib.pyplot as plt
+import torch
 
+# Function to train the model
+def train_model(model, train_loader, criterion, optimizer, device, num_epochs=10):
+    model.to(device)
+    model.train()
+    
+    for epoch in range(num_epochs):
+        total_loss = 0.0
+        for inputs, targets in train_loader:
+            inputs, targets = inputs.to(device), targets.to(device)
+            optimizer.zero_grad()
+            outputs = model(inputs)
+            loss = criterion(outputs, targets)
+            loss.backward()
+            optimizer.step()
+            total_loss += loss.item()
+        
+        print(f"Epoch {epoch+1}/{num_epochs}, Loss: {total_loss/len(train_loader):.4f}")
+
+
+# Function to test the model
+def test_model(model, test_loader, device):
+    model.to(device)
+    model.eval()
+    predictions, actuals = [], []
+    
+    with torch.no_grad():
+        for inputs, targets in test_loader:
+            inputs, targets = inputs.to(device), targets.to(device)
+            outputs = model(inputs)
+            predictions.extend(outputs.cpu().numpy())
+            actuals.extend(targets.cpu().numpy())
+    
+    return predictions, actuals
+
+
+# Function to evaluate new data
+def evaluate_data(model, data, device):
+    model.to(device)
+    model.eval()
+    
+    data = torch.tensor(data, dtype=torch.float32).to(device)
+    with torch.no_grad():
+        output = model(data)
+    return output.cpu().numpy()
+
+
+'''
 def apply_sine_modulation(X: np.ndarray, frequencies: np.ndarray, num_cycles: int = 10, sample_rate: int = 100):
     """
     Applies sine wave modulation to each feature in X with a unique frequency.
@@ -44,6 +92,7 @@ def analyze_spectral_importance(y_series: np.ndarray, frequencies: np.ndarray, s
     
     return importance
 
+
 def feature_importance_analysis(model: BaseEstimator, X: np.ndarray, frequencies: np.ndarray, sample_rate: int = 100):
     """
     Computes feature importance using frequency-based analysis.
@@ -64,9 +113,4 @@ def feature_importance_analysis(model: BaseEstimator, X: np.ndarray, frequencies
     
     return importance
 
-# Example usage with a trained model:
-# model = SomeTrainedModel()
-# X_sample = np.random.randn(100, 5)  # Example input data
-# freqs = np.array([1, 2, 3, 5, 7])  # Unique frequencies for each feature
-# importance = feature_importance_analysis(model, X_sample, freqs)
-# print(importance)
+'''
