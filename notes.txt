@@ -1,0 +1,64 @@
+Feature Oscillation Analysis for Feature Importance (FOA, FOFI, ?)
+
+Here is a feature importance method for ML models idea. The attached file contains a 'conversation' I had with ChatGPT to expand the idea.
+I tested this on a quick housing market dataset from Kaggle, and it worked in principle, although, the model was not complicated enough to 
+really get at nonlinear interactions, and I did not yet try to extract mixed frequencies to uncover covariance. I suspect they did appear though.
+
+For example, the housing data set has several features including the size of the house, number of bedrooms, number of bathrooms, etc. For all
+features I took the actual value of the feature and chose a unique frequency. A sine wave is applied to each feature so that it oscillates in
+'time' around its value. After the model is trained the model prediction is applied to all time-extended features so that the output shows
+oscillations associated with each input (so long as the feature plays a part in the output that is!). Then frequencies that are not part of the
+chose frequencies for each feature are observed to look at covariance between features. If feature x1 has frequency f1 and feature x2 has frequency
+f2 and the model after applied to the time-extended features contains oscillations f1, f2, f1-f2, and f1+f2, then the relative magnitude of the
+oscillations tells you about the importance of f1 and f2 alone as well as the covariance (f1-f2 and f1+f2).
+
+
+Methods of testing:
+
+Train on all data – get feature importance for all or many of the samples. average coefficient for each feature, and get stddev
+Train on subset of data – get feature importance from all untrained samples, average coefficient for each feature, and get stddev
+Single analysis on average of features
+ 
+
+Applications
+
+Apply to single sample.
+Apply to all samples to get average feature importance.
+ 
+
+To Do:
+
+Find open-source data sets to test the model – start simple
+Could start with something contrived for example a written function that does or does not contain combinations of variables linearly and non-linearly.
+i.      Y = X0 + a*X1 + b*X2 + c*X1*X2
+ii.      Y = X0 + a*X1 + b*X2 + c*X1*X2
+
+Kaggle housing prices
+ 
+Use the coefficients (i.e., amplitudes) of the model output oscillations as the feature importance.
+Generate a metric (like a % importance) along with a range of importance (i.e., % stddev) based on the number of samples analyzed.
+Perform spectral decomposition on the model output and look for covariance by investigating frequencies that exist outside of the chosen frequencies for each feature.
+Show that features with no impact on the results should be removed by the model – add random feature to the data and show that there is no or very little oscillations in the output associated with the frequency chosen for that random variable.
+Descriptions of other methods (SHAP – shapely additive explanations)
+Motivation for explainable AI and to reduce model complexity by reducing the number of features
+ 
+
+Considerations:
+
+Frequencies must be chosen cleverly, so that all frequencies are unique as well as all combinations of frequencies are unique.
+How can prime numbers of combinatorics can solve this issue.
+Optimize how many time-extended points are required such that all oscillations can be seen in the output.
+What is the rule of thumb for the required amount of time to see an oscillation with a period T? The answer may be in climatology research.
+ 
+
+Future Work:
+
+Test by changing to the oscillation amplitude to be something like the error in the feature – this could be challenging b/c you need to use the scale of the oscillation in the model predicted output to gauge the relative importance.
+Investigate NN model architecture effects on the model outputs.
+Investigate various ML techniques on model outputs (NN, CNN, Random Forest, Decision Tree, etc. )
+Using the method for categorical ML prediction
+
+
+Abstract written by ChatGPT:
+
+Feature importance estimation is crucial for understanding the decision-making processes of machine learning (ML) models, yet existing methods often fail to capture nonlinear interactions and feature covariance effectively. In this work, we introduce a novel frequency-based approach to feature importance and interaction analysis. Our method perturbs each feature with a unique sinusoidal signal and evaluates the model’s response in the frequency domain. By applying spectral decomposition techniques to the model’s output, we extract the relative contributions of individual features based on the amplitude of their respective frequencies. Furthermore, we quantify feature interactions by analyzing emergent mixed frequencies, which result from nonlinear dependencies and covariance effects within the model. This approach provides a structured and interpretable way to assess both direct feature importance and higher-order interactions. We validate our method on synthetic and real-world datasets, demonstrating its ability to recover known feature relationships and uncover latent dependencies in complex ML models. Compared to traditional techniques such as SHAP and permutation importance, our method offers a complementary, frequency-based perspective on feature attribution, with potential applications in explainable AI, scientific modeling, and feature engineering.
