@@ -13,7 +13,6 @@ import models
 import functions as func
 
 
-# Example usage
 if __name__ == "__main__":
 
     flag_plot = True
