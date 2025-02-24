@@ -52,7 +52,7 @@ def build_model(num_hidden_layers, nodes_per_layer, activation='relu', input_dim
 def func_sine(x):
     return np.sin(2 * np.pi * x)
 def func_power(x, n):
-    return np.power(x, n)
+    return np.power(x-0.5, n)
 def func_exp(x):
     return np.exp(x)
 def func_log(x):
@@ -93,6 +93,10 @@ class FunctionDataset(Dataset):
 
 if __name__ == "__main__":
 
+    print("Two Methods for Evaluation")
+    print("1. MSE / RMSE to exact function over the interval")
+    print("2. Ability to extrapolate above / below the range it was trained on - ability to learn the function")
+
     funcs = ['sine', 'quadratic', 'cubic', 'exponential', 'log', '1/x']
     activation_functions = ['relu', 'sigmoid', 'tanh']
     number_hidden_layers = range(1,11)
@@ -120,7 +124,7 @@ if __name__ == "__main__":
     func = funcs[0]
     activation_func = activation_functions[1]
     hidden_layers = number_hidden_layers[2]
-    num_nodes = 64 #number_nodes_per_layer[8]
+    num_nodes = 4 #number_nodes_per_layer[8]
 
 
     # Create the dataset and dataloader
@@ -128,7 +132,7 @@ if __name__ == "__main__":
     dataloader = DataLoader(dataset, batch_size=32, shuffle=False)
 
 
-    epochs = 50
+    epochs = 200
     criterion = nn.MSELoss()
     model = build_model(num_hidden_layers=hidden_layers, nodes_per_layer=num_nodes, activation=activation_func)
     optimizer = optim.NAdam(model.parameters(), lr=0.01)
@@ -144,7 +148,8 @@ if __name__ == "__main__":
         print(f"Epoch {epoch+1}/{epochs}, Loss: {loss.item():.4f}")
 
 
-    x_range = np.linspace(0.001, 1, 1000)
+    #x_range = np.linspace(0.001, 1, 100)
+    x_range = np.linspace(-1, 2, 100)
     x_tensor = torch.tensor(x_range, dtype=torch.float32).unsqueeze(1)
 
     with torch.no_grad():
@@ -166,7 +171,7 @@ if __name__ == "__main__":
     
     if flag_plot:
         fig, ax = plt.subplots(figsize=(10,7))
-        ax.scatter(x_range, y_predict, color='black', label='predicted')
+        ax.scatter(x_range, y_predict, color='black', s=25, label='predicted')
         ax.plot(x_range, y_function, color='red', label='function')
         ax.set_xlabel("X", fontsize=12)
         ax.set_ylabel("Y", fontsize=12)
